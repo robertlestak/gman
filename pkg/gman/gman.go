@@ -75,7 +75,7 @@ func (g *Gman) LoadReleases() error {
 	// ensure local dir exists
 	_, err := os.Stat(g.LocalDir)
 	if os.IsNotExist(err) {
-		return errors.New("local dir does not exist")
+		return nil
 	}
 	// load releases
 	releaseDir := filepath.Join(g.LocalDir, "releases")
