@@ -49,7 +49,7 @@ docker-push:
 	docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t robertlestak/gman:$(VERSION) --push .
 
 docker-latest: docker-push
-	docker buildx imagetools create robertlestak/gman:$(VERSION) robertlestak/gman:latest
+	docker buildx imagetools create robertlestak/gman:$(VERSION) --tag robertlestak/gman:latest
 
 clean: clean-web
 	rm -rf bin/*
