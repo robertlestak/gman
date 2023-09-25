@@ -1,0 +1,38 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gman-config
+  namespace: default
+data:
+  config.yaml: |
+    # git pull interval
+    interval: 2h
+    # open URLs in browser on GET failure
+    open: false
+    # set a default namespace other than "default"
+    namespace: foobar
+    # notify on new releases
+    notify: false
+    # pager to use
+    pager: less
+    # render markdown
+    render: false
+    # show tldr
+    tldr: true
+    # web mode
+    web: false
+    # web address
+    webAddr: :8080
+    # web dir
+    webDir: web
+    # default repo to use
+    repo: foo
+    # configured repos
+    repos:
+      foo:
+        url: https://git.shdw.tech/rob/gman-docs-test
+        branch: main
+      another:
+        url: https://git.shdw.tech/rob/gman-docs-test-2
+        branch: develop

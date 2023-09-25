@@ -35,6 +35,9 @@ spec:
         volumeMounts:
           - name: gman
             mountPath: /root/.gman
+          - name: config
+            mountPath: /root/.gman/config.yaml
+            subPath: config.yaml
           - name: netrc
             mountPath: /root/.netrc
             subPath: .netrc
@@ -42,6 +45,9 @@ spec:
         - name: gman
           persistentVolumeClaim:
             claimName: gman
+        - name: config
+          configMap:
+            name: gman-config
         - name: netrc
           secret:
             secretName: netrc
