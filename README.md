@@ -32,6 +32,7 @@
     - [Print Man Dir](#print-man-dir)
     - [tl;dr](#tldr)
     - [Web](#web)
+      - [Deployment](#deployment)
 
 
 ## Dependencies
@@ -451,3 +452,13 @@ gman -web
 ```
 
 This will automatically update the web server when the `gman repo` is updated, at the interval specified in the `~/.gman/config.yaml` file, or via the `-interval` flag.
+
+The `deploy` directory contains an example Kubernetes deployment for the web server.
+
+#### Deployment
+
+First, edit the manifests to suit your needs. "Sensible defaults" have been set, but be sure to review and update as needed.
+
+```bash
+kubectl apply -f deploy
+```
