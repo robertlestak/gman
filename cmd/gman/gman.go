@@ -289,6 +289,7 @@ func main() {
 	}
 	// if we only want to list the namespaces, do it and exit
 	if *showNamespaces {
+		l.Debug("listing namespaces")
 		// set the current namespace to "" so we get all namespaces
 		apps := m.ListApps("")
 		if err := output.PrintNamespaces(m, apps, output.OutputType(*outputType)); err != nil {
@@ -296,17 +297,19 @@ func main() {
 		}
 		return
 	}
+	// if we want to search, do it and exit
+	if *search != "" {
+		l.Debug("searching apps")
+		searchCmd(m)
+		return
+	}
 	// if we only want to list apps, do it and exit
 	if len(gmancmd.Args()) == 0 {
+		l.Debug("listing apps")
 		apps := m.ListApps(m.CurrentNamespace)
 		if err := output.PrintApps(m, apps, output.OutputType(*outputType)); err != nil {
 			log.Fatal(err)
 		}
-		return
-	}
-	// if we want to search, do it and exit
-	if *search != "" {
-		searchCmd(m)
 		return
 	}
 	// if there is only one arg, show the app

@@ -137,20 +137,26 @@ func releaseSliceContains(releases []release.Release, release release.Release) b
 }
 
 func (g *Gman) SearchApps(namespace string, search string) []App {
+	l := log.WithField("fn", "SearchApps")
+	l.Debug("searching apps")
 	// Don't open URLs on get failure when searching
 	OpenURLOnGetFailure = false
 	var apps []App
 	for _, app := range g.ListApps(namespace) {
+		l.WithField("app", app.Name).Debug("checking app")
 		if strings.Contains(app.Name, search) {
+			l.Debug("app found")
 			apps = append(apps, app)
 		}
 		// check inside the readme
 		if app.ReadmeFile != nil {
 			rd, err := app.Readme()
 			if err != nil {
+				l.WithError(err).Debug("error getting readme")
 				continue
 			}
 			if utils.StringSearch(rd, search) && !appsSliceContains(apps, app) {
+				l.Debug("app found")
 				apps = append(apps, app)
 			}
 		}
@@ -158,13 +164,16 @@ func (g *Gman) SearchApps(namespace string, search string) []App {
 		if app.ShortFile != nil {
 			tl, err := app.TLDR()
 			if err != nil {
+				l.WithError(err).Debug("error getting tldr")
 				continue
 			}
 			if utils.StringSearch(tl, search) && !appsSliceContains(apps, app) {
+				l.Debug("app found")
 				apps = append(apps, app)
 			}
 		}
 	}
+	l.Debug("apps searched")
 	return apps
 }
 

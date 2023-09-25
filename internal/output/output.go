@@ -5,6 +5,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type OutputType string
@@ -37,7 +39,9 @@ func RenderPandoc(data string) (string, error) {
 	}
 	cmd := exec.Command(cmds[0], cmds[1:]...)
 	cmd.Stdin = strings.NewReader(data)
-	cmd.Stderr = os.Stderr
+	if log.GetLevel() == log.DebugLevel {
+		cmd.Stderr = os.Stderr
+	}
 	out, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -52,7 +56,9 @@ func RenderPandoc(data string) (string, error) {
 	cmd.Stdin = strings.NewReader(string(out))
 	outData := bytes.Buffer{}
 	cmd.Stdout = &outData
-	cmd.Stderr = os.Stderr
+	if log.GetLevel() == log.DebugLevel {
+		cmd.Stderr = os.Stderr
+	}
 	err = cmd.Run()
 	if err != nil {
 		return "", err
