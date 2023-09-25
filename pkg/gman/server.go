@@ -47,15 +47,15 @@ func (g *Gman) buildWeb() error {
 	p = p[:len(p)-len(filepath.Ext(p))]
 	// split p on / and get the last element
 	name := path.Base(p)
-	cmd.Env = []string{
+	cmd.Env = append(cmd.Env, os.Environ()...)
+	cmd.Env = append(cmd.Env, []string{
 		"NODE_ENV=production",
 		"SITE_TITLE=" + name,
 		"RELEASES_DIR=" + path.Join(g.ConfigDir, g.RepoDir()) + "/releases",
 		"DOCS_DIR=" + path.Join(g.ConfigDir, g.RepoDir()) + "/docs",
 		"GIT_REPO=" + g.Repo.URL,
-	}
+	}...)
 	l.Debugf("env: %v", cmd.Env)
-	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Dir = g.WebDir
 	if log.GetLevel() >= log.DebugLevel {
 		cmd.Stdout = os.Stdout
