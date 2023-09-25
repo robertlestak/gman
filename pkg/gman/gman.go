@@ -16,6 +16,7 @@ import (
 
 var (
 	OpenURLOnGetFailure = false
+	ServerMode          = false
 )
 
 type Gman struct {
@@ -324,7 +325,7 @@ func (a *App) Readme() (string, error) {
 	l.Debug("readme file read")
 	if utils.IsOnlyUrl(string(b)) {
 		l.Debug("readme file is only a url")
-		res, err := utils.GetRemote(string(b))
+		res, err := utils.GetRemote(string(b), ServerMode)
 		if err != nil {
 			if OpenURLOnGetFailure {
 				l.Debug("opening url")
@@ -348,7 +349,7 @@ func (a *App) TLDR() (string, error) {
 		return "", err
 	}
 	if utils.IsOnlyUrl(string(b)) {
-		res, err := utils.GetRemote(string(b))
+		res, err := utils.GetRemote(string(b), ServerMode)
 		if err != nil {
 			if OpenURLOnGetFailure {
 				utils.OpenURL(string(b))
