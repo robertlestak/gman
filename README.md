@@ -211,7 +211,7 @@ Usage of gman:
     	render markdown (default true)
   -repo string
     	git repo
-  -search string
+  -s string
     	search
   -t	show tldr
   -version
@@ -310,7 +310,7 @@ gman -r v0.0.1
 You can also search in releases using the `-search` flag, eg:
 
 ```bash
-gman -r -search foo
+gman -r -s foo
 ```
 
 ### ~/.gman
@@ -393,11 +393,11 @@ The `-search` flag will search all apps in the `gman repo` for the given search 
 
 ```bash
 # search all apps
-gman -search foo
+gman -s foo
 # search apps in a given namespace
-gman -search foo -n bar
+gman -s foo -n bar
 # regex search
-gman -search '^foo.*bar$'
+gman -s '^foo.*bar$'
 ```
 
 ### Releases
@@ -408,9 +408,9 @@ The `-r` flag will list all releases in the `gman repo`. If a search term is spe
 # list all releases
 gman -r
 # list releases matching a search term
-gman -r -search foo
+gman -r -s foo
 # regex search
-gman -r -search '^foo.*bar$'
+gman -r -s '^foo.*bar$'
 # show a specific release
 gman -r v0.0.1
 ```

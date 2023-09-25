@@ -30,7 +30,7 @@ var (
 	branch         = gmancmd.String("branch", "main", "git branch")
 	updateInterval = gmancmd.String("interval", "24h", "update interval")
 	forceUpdate    = gmancmd.Bool("pull", false, "update repo now")
-	search         = gmancmd.String("search", "", "search")
+	search         = gmancmd.String("s", "", "search")
 	version        = gmancmd.Bool("version", false, "show version")
 	printDir       = gmancmd.Bool("dir", false, "print man dir instead of showing contents")
 	openURL        = gmancmd.Bool("open", false, "open url on get failure")
