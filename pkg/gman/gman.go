@@ -173,6 +173,11 @@ func (g *Gman) SearchApps(namespace string, search string) []App {
 			}
 		}
 	}
+	// if we found no apps, try across all namespaces
+	if len(apps) == 0 {
+		l.Debug("no apps found, searching all namespaces")
+		apps = g.SearchApps("", search)
+	}
 	l.Debug("apps searched")
 	return apps
 }
