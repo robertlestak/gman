@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gman
+  namespace: default
+  labels:
+    app: gman
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gman
+  template:
+    metadata:
+      labels:
+        app: gman
+    spec:
+      containers:
+      - name: gman
+        image: robertlestak/gman:latest
+        args:
+          - -web
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+            name: http
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        volumeMounts:
+          - name: gman
+            mountPath: /root/.gman
+          - name: netrc
+            mountPath: /root/.netrc
+            subPath: .netrc
+      volumes:
+        - name: gman
+          persistentVolumeClaim:
+            claimName: gman
+        - name: netrc
+          secret:
+            secretName: netrc
