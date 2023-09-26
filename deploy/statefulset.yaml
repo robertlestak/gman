@@ -1,12 +1,13 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: gman
   namespace: default
   labels:
     app: gman
 spec:
+  serviceName: gman
   replicas: 1
   selector:
     matchLabels:
