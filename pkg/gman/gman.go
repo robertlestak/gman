@@ -137,50 +137,147 @@ func releaseSliceContains(releases []release.Release, release release.Release) b
 	return false
 }
 
+type AppSearch struct {
+	Search string
+	App    App
+	Match  bool
+	Error  error
+}
+
+func searchApp(app App, search string) (bool, error) {
+	l := log.WithField("fn", "searchApp")
+	l.WithField("app", app.Name).Debug("checking app")
+	if strings.Contains(app.Name, search) {
+		l.Debug("app found")
+		return true, nil
+	}
+	// check inside the readme
+	if app.ReadmeFile != nil {
+		rd, err := app.Readme()
+		if err != nil {
+			return false, err
+		}
+		if utils.StringSearch(rd, search) {
+			l.Debug("app found")
+			return true, nil
+		}
+	}
+	// check inside the tldr
+	if app.ShortFile != nil {
+		tl, err := app.TLDR()
+		if err != nil {
+			l.WithError(err).Debug("error getting tldr")
+			return false, err
+		}
+		if utils.StringSearch(tl, search) {
+			l.Debug("app found")
+			return true, nil
+		}
+	}
+	return false, nil
+
+}
+
+func appSearchWorker(jobs chan AppSearch, res chan AppSearch) {
+	l := log.WithField("fn", "appSearchWorker")
+	l.Debug("starting app search worker")
+	for j := range jobs {
+		l.WithField("app", j.App.Name).Debug("checking app")
+		m, err := searchApp(j.App, j.Search)
+		if err != nil {
+			j.Error = err
+			res <- j
+			continue
+		}
+		j.Match = m
+		res <- j
+	}
+}
+
 func (g *Gman) SearchApps(namespace string, search string) []App {
 	l := log.WithField("fn", "SearchApps")
 	l.Debug("searching apps")
 	// Don't open URLs on get failure when searching
 	OpenURLOnGetFailure = false
-	var apps []App
-	for _, app := range g.ListApps(namespace) {
-		l.WithField("app", app.Name).Debug("checking app")
-		if strings.Contains(app.Name, search) {
-			l.Debug("app found")
-			apps = append(apps, app)
+	var foundApps []App
+	workers := 10
+	apps := g.ListApps(namespace)
+	if len(apps) < workers {
+		workers = len(apps)
+	}
+	jobs := make(chan AppSearch, len(apps))
+	res := make(chan AppSearch, len(apps))
+	for w := 1; w <= workers; w++ {
+		go appSearchWorker(jobs, res)
+	}
+	for _, app := range apps {
+		jobs <- AppSearch{
+			Search: search,
+			App:    app,
 		}
-		// check inside the readme
-		if app.ReadmeFile != nil {
-			rd, err := app.Readme()
-			if err != nil {
-				l.WithError(err).Debug("error getting readme")
-				continue
-			}
-			if utils.StringSearch(rd, search) && !appsSliceContains(apps, app) {
-				l.Debug("app found")
-				apps = append(apps, app)
-			}
+	}
+	close(jobs)
+	for a := 1; a <= len(apps); a++ {
+		r := <-res
+		if r.Error != nil {
+			l.WithError(r.Error).Error("error searching app")
+			continue
 		}
-		// check inside the tldr
-		if app.ShortFile != nil {
-			tl, err := app.TLDR()
-			if err != nil {
-				l.WithError(err).Debug("error getting tldr")
-				continue
-			}
-			if utils.StringSearch(tl, search) && !appsSliceContains(apps, app) {
-				l.Debug("app found")
-				apps = append(apps, app)
-			}
+		if r.Match && !appsSliceContains(foundApps, r.App) {
+			foundApps = append(foundApps, r.App)
 		}
 	}
 	// if we found no apps, try across all namespaces
-	if len(apps) == 0 {
+	if len(foundApps) == 0 && namespace != "" {
 		l.Debug("no apps found, searching all namespaces")
-		apps = g.SearchApps("", search)
+		foundApps = g.SearchApps("", search)
 	}
 	l.Debug("apps searched")
-	return apps
+	return foundApps
+}
+
+type ReleaseSearch struct {
+	Search  string
+	Release release.Release
+	Match   bool
+	Error   error
+}
+
+func searchRelease(r release.Release, search string) (bool, error) {
+	l := log.WithField("fn", "searchRelease")
+	l.WithField("release", r.Name).Debug("checking release")
+	if strings.Contains(r.Name, search) {
+		l.Debug("release found")
+		return true, nil
+	}
+	// check inside the readme
+	if r.ReadmeFile != nil {
+		rd, err := r.Readme()
+		if err != nil {
+			return false, err
+		}
+		if utils.StringSearch(rd, search) {
+			l.Debug("release found")
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func releaseSearchWorker(jobs chan ReleaseSearch, res chan ReleaseSearch) {
+	l := log.WithField("fn", "releaseSearchWorker")
+	l.Debug("starting release search worker")
+	for j := range jobs {
+		l.WithField("release", j.Release.Name).Debug("checking release")
+		m, err := searchRelease(j.Release, j.Search)
+		if err != nil {
+			j.Error = err
+			res <- j
+			continue
+		}
+		j.Match = m
+		res <- j
+	}
 }
 
 func (g *Gman) SearchReleases(search string) []release.Release {
@@ -191,19 +288,30 @@ func (g *Gman) SearchReleases(search string) []release.Release {
 	if rs == nil {
 		return nil
 	}
+	workers := 10
+	if len(rs) < workers {
+		workers = len(rs)
+	}
+	jobs := make(chan ReleaseSearch, len(rs))
+	res := make(chan ReleaseSearch, len(rs))
+	for w := 1; w <= workers; w++ {
+		go releaseSearchWorker(jobs, res)
+	}
 	for _, r := range rs {
-		if strings.Contains(r.Name, search) {
-			rr = append(rr, r)
+		jobs <- ReleaseSearch{
+			Search:  search,
+			Release: r,
 		}
-		// check inside the readme
-		if r.ReadmeFile != nil {
-			rd, err := r.Readme()
-			if err != nil {
-				continue
-			}
-			if utils.StringSearch(rd, search) && !releaseSliceContains(rr, r) {
-				rr = append(rr, r)
-			}
+	}
+	close(jobs)
+	for a := 1; a <= len(rs); a++ {
+		r := <-res
+		if r.Error != nil {
+			log.WithError(r.Error).Error("error searching release")
+			continue
+		}
+		if r.Match && !releaseSliceContains(rr, r.Release) {
+			rr = append(rr, r.Release)
 		}
 	}
 	return rr
