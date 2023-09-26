@@ -131,7 +131,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} gman, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} gman. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
