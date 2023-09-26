@@ -30,8 +30,8 @@ spec:
             cpu: 100m
             memory: 100Mi
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "3"
+            memory: "4Gi"
         volumeMounts:
           - name: gman
             mountPath: /root/.gman
