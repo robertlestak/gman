@@ -451,7 +451,7 @@ If the `-web` flag is passed (or `web: true` is set in the `~/.gman/config.yaml`
 gman -web
 ```
 
-This will automatically update the web server when the `gman repo` is updated, at the interval specified in the `~/.gman/config.yaml` file, or via the `-interval` flag.
+This will automatically update the web server when the `gman repo` is updated, at the interval specified in the `~/.gman/config.yaml` file, or via the `-interval` flag. When updating the repo, the web server will also attempt to retrieve embedded relative path images and embed them in the rendered Markdown/HTML. 
 
 The `deploy` directory contains an example Kubernetes deployment for the web server.
 
