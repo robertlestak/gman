@@ -168,12 +168,13 @@ func (g *Gman) RenderDocsToDisk() error {
 func (g *Gman) serverUpdater() {
 	l := log.WithField("fn", "serverUpdater")
 	l.Debug("init web")
+	log.Info("initializing node environment...")
 	if err := g.initWeb(); err != nil {
 		l.Fatal(err)
 	}
 	l.Debug("web inited")
 	for {
-		l.Info("updating git")
+		l.Debug("updating git")
 		if err := g.GitUpdate(); err != nil {
 			l.Fatal(err)
 		}
@@ -188,11 +189,11 @@ func (g *Gman) serverUpdater() {
 		if err := g.RenderDocsToDisk(); err != nil {
 			l.Error(err)
 		}
-		l.Info("building web")
+		l.Info("building web app...")
 		if err := g.buildWeb(); err != nil {
 			l.Fatal(err)
 		}
-		l.Info("web built")
+		l.Info("web app built, ready to serve")
 		// sleep
 		l.Debug("sleeping")
 		time.Sleep(g.UpdateInterval)
@@ -214,6 +215,7 @@ func (g *Gman) Server() error {
 	go g.serverUpdater()
 	staticDir := filepath.Join(g.WebDir, "build")
 	http.Handle("/", http.FileServer(http.Dir(staticDir)))
+	log.Infof("server listening on %s", g.WebAddr)
 	if err := http.ListenAndServe(g.WebAddr, nil); err != nil {
 		return err
 	}

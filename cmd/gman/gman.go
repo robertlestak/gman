@@ -216,6 +216,7 @@ func checkForUpdates(m *gman.Gman) {
 }
 
 func webCmd(m *gman.Gman) {
+	log.Info("starting web server. press ctrl-c to exit")
 	if err := m.Server(); err != nil {
 		log.Fatal(err)
 	}
